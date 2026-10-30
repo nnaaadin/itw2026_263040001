@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coba CSS - Font Styling</title>
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&family=Press+Start+2P&family=Redaction+35:ital,wght@0,400;0,700;1,400&display=swap');
+
+    @font-face {
+    font-family: cinzel;
+    src: url('fonts/Cinzel-VariableFont_wght.ttf') format('truetype');
+        font-weight: normal;
+        font-display: normal;
+        font-style: normal;
+
+    }
+
+        h1 {
+            color:blueviolet;
+            font-size: 60px;
+            text-align: center;
+            font-family: "Press Start 2P", system-ui;
+            
+        }
+
+        p {
+            color:lightblue;
+            text-align: center;
+            font-size: 30px;
+            font-family: "Redaction 35", serif;
+        }
+
+        .font-cinzel {
+            font-family: cinzel, serif;
+
+        }
+
+
+
+    </style>
+</head>
+
+<body>
+    <h1> Hello World</h1>
+    <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Exercitationem reiciendis dicta atque a adipisci vel alias explicabo reprehenderit necessitatibus distinctio.</p>
+    <p class="font-cinzel">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quia quam rem nihil corporis sint amet necessitatibus mollitia maxime voluptates praesentium.</p>
+</body>
+</html>
