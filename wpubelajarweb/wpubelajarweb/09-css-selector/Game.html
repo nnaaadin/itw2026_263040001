@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DataCraft Tycoon: DB Incident Response & Cyber Heist</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cyber: {
+              black: '#030712',
+              dark: '#0b0f19',
+              card: '#111827',
+              border: '#1f293d',
+              neonGreen: '#10b981',
+              neonCyan: '#06b6d4',
+              neonRose: '#f43f5e',
+              neonAmber: '#f59e0b',
+              neonViolet: '#8b5cf6'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Fira Code', 'Courier New', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* CRT scanline effect */
+    .scanlines {
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+      background-size: 100% 3px, 6px 100%;
+      pointer-events: none;
+    }
+
+    @keyframes pulse-alarm {
+      0%, 100% { border-color: rgba(244, 63, 94, 0.4); box-shadow: 0 0 15px rgba(244, 63, 94, 0.2); }
+      50% { border-color: rgba(244, 63, 94, 0.9); box-shadow: 0 0 30px rgba(244, 63, 94, 0.5); }
+    }
+    .alarm-active { animation: pulse-alarm 1.2s infinite ease-in-out; }
+
+    /* Custom Terminal scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #030712; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #334155; }
+  </style>
+</head>
+<body class="bg-cyber-black text-slate-100 min-h-screen flex flex-col selection:bg-cyan-500 selection:text-black">
+
+  <!-- Scanlines layer -->
+  <div class="fixed inset-0 scanlines z-50 pointer-events-none opacity-40"></div>
+
+  <!-- Cyber War Room Top Bar -->
+  <header class="border-b border-cyber-border bg-cyber-dark/95 backdrop-blur sticky top-0 z-40 px-4 py-2.5">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <!-- Title & Branding -->
+      <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('missions')">
+        <div class="relative w-10 h-10 rounded-xl bg-gradient-to-br from-rose-500 via-indigo-600 to-cyan-400 p-[2px] shadow-lg shadow-cyan-500/20">
+          <div class="w-full h-full bg-cyber-black rounded-[10px] flex items-center justify-center">
+            <i class="fa-solid fa-server text-cyan-400 text-lg"></i>
+          </div>
+          <span class="absolute -bottom-1 -right-1 flex h-3 w-3">
+            <span id="live-dot-ping" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+            <span id="live-dot" class="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
+          </span>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base font-extrabold tracking-wide uppercase bg-gradient-to-r from-cyan-400 via-white to-rose-400 bg-clip-text text-transparent">DataCraft Tycoon</h1>
+            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/40">WAR ROOM</span>
+          </div>
+          <p class="text-[11px] text-slate-400 font-mono">Incident Response &amp; Cyber Heist Simulation</p>
+        </div>
+      </div>
+
+      <!-- SRE HUD Meters -->
+      <div class="flex items-center gap-3 sm:gap-6 text-xs font-mono">
+        <!-- CPU Load -->
+        <div class="hidden sm:flex flex-col w-28">
+          <div class="flex justify-between text-[11px] mb-1">
+            <span class="text-slate-400">CPU LOAD</span>
+            <span id="hud-cpu" class="text-rose-400 font-bold">88%</span>
+          </div>
+          <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+            <div id="hud-cpu-bar" class="bg-rose-500 h-1.5 transition-all duration-300" style="width: 88%"></div>
+          </div>
+        </div>
+
+        <!-- Health bar -->
+        <div class="flex flex-col w-28 sm:w-32">
+          <div class="flex justify-between text-[11px] mb-1">
+            <span class="text-slate-400">SERVER HEALTH</span>
+            <span id="hud-health" class="text-amber-400 font-bold">64%</span>
+          </div>
+          <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+            <div id="hud-health-bar" class="bg-amber-400 h-1.5 transition-all duration-300" style="width: 64%"></div>
+          </div>
+        </div>
+
+        <!-- Stats XP & Badges -->
+        <div class="flex items-center gap-2.5 bg-cyber-card px-3 py-1.5 rounded-lg border border-cyber-border">
+          <div class="text-amber-400 flex items-center gap-1 font-bold">
+            <i class="fa-solid fa-bolt"></i>
+            <span id="hud-xp">0</span> XP
+          </div>
+          <div class="h-3 w-px bg-slate-700"></div>
+          <div class="text-cyan-400 flex items-center gap-1 font-bold" title="Badges Acquired">
+            <i class="fa-solid fa-shield-halved"></i>
+            <span id="hud-badges">0/5</span>
+          </div>
+        </div>
+
+        <!-- Audio toggle -->
+        <button id="btn-sound" onclick="toggleAudio()" class="p-2 rounded-lg bg-cyber-card border border-cyber-border hover:border-cyan-500 text-slate-300 transition" title="Mute/Unmute Audio SRE">
+          <i id="sound-icon" class="fa-solid fa-volume-high text-cyan-400"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation Subbar -->
+    <div class="max-w-7xl mx-auto flex items-center justify-between mt-2 pt-2 border-t border-cyber-border/80 text-xs">
+      <div class="flex items-center gap-2 overflow-x-auto">
+        <button onclick="switchView('missions')" id="tab-missions" class="tab-btn px-3 py-1 rounded-md bg-cyan-500 text-black font-bold flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-triangle-exclamation"></i> Crisis Operations
+        </button>
+        <button onclick="switchView('badges')" id="tab-badges" class="tab-btn px-3 py-1 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-medal"></i> Trophy Room & Badges
+        </button>
+        <button onclick="switchView('logs')" id="tab-logs" class="tab-btn px-3 py-1 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-terminal"></i> Incident Log Stream
+        </button>
+      </div>
+      <div class="hidden md:flex items-center gap-2 text-[11px] text-slate-400 font-mono">
+        <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span>CLUSTER: PROD-AP-SOUTHEAST-3</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 space-y-6">
+
+    <!-- VIEW 1: MISSIONS (INCIDENT RESPONSE CARDS) -->
+    <div id="view-missions" class="space-y-6">
+      
+      <!-- Incident Operations Selector -->
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-2.5">
+        <button onclick="openMission(1)" id="btn-m1" class="m-selector text-left p-3 rounded-xl border border-rose-500/60 bg-rose-950/20 hover:bg-rose-900/30 transition relative overflow-hidden">
+          <div class="flex justify-between items-center text-[10px] font-mono text-rose-400 mb-1">
+            <span>INCIDENT #101</span>
+            <span id="badge-m1-tag"><i class="fa-solid fa-fire text-rose-400"></i> CRITICAL</span>
+          </div>
+          <h3 class="text-xs sm:text-sm font-bold text-white truncate">Black Friday Crash</h3>
+          <p class="text-[11px] text-slate-400 truncate">Schema, FK &amp; Index Crash</p>
+        </button>
+
+        <button onclick="openMission(2)" id="btn-m2" class="m-selector text-left p-3 rounded-xl border border-cyber-border bg-cyber-card/60 hover:bg-cyber-card transition">
+          <div class="flex justify-between items-center text-[10px] font-mono text-cyan-400 mb-1">
+            <span>INCIDENT #102</span>
+            <span id="badge-m2-tag"><i class="fa-solid fa-lock"></i> HEIST</span>
+          </div>
+          <h3 class="text-xs sm:text-sm font-bold text-white truncate">Data Leak Heist</h3>
+          <p class="text-[11px] text-slate-400 truncate">SQLi &amp; Salt Hashing</p>
+        </button>
+
+        <button onclick="openMission(3)" id="btn-m3" class="m-selector text-left p-3 rounded-xl border border-cyber-border bg-cyber-card/60 hover:bg-cyber-card transition">
+          <div class="flex justify-between items-center text-[10px] font-mono text-indigo-400 mb-1">
+            <span>INCIDENT #103</span>
+            <span id="badge-m3-tag"><i class="fa-solid fa-puzzle-piece"></i> 1NF-3NF</span>
+          </div>
+          <h3 class="text-xs sm:text-sm font-bold text-white truncate">Normalisasi Resto</h3>
+          <p class="text-[11px] text-slate-400 truncate">Struk Raksasa Decomposition</p>
+        </button>
+
+        <button onclick="openMission(4)" id="btn-m4" class="m-selector text-left p-3 rounded-xl border border-cyber-border bg-cyber-card/60 hover:bg-cyber-card transition">
+          <div class="flex justify-between items-center text-[10px] font-mono text-amber-400 mb-1">
+            <span>INCIDENT #104</span>
+            <span id="badge-m4-tag"><i class="fa-solid fa-building-columns"></i> DEADLOCK</span>
+          </div>
+          <h3 class="text-xs sm:text-sm font-bold text-white truncate">Krisis Bank Digital</h3>
+          <p class="text-[11px] text-slate-400 truncate">ACID &amp; Concurrency</p>
+        </button>
+
+        <button onclick="openMission(5)" id="btn-m5" class="m-selector text-left p-3 rounded-xl border border-cyber-border bg-cyber-card/60 hover:bg-cyber-card transition col-span-2 md:col-span-1">
+          <div class="flex justify-between items-center text-[10px] font-mono text-rose-400 mb-1">
+            <span>BOSS BATTLE</span>
+            <span id="badge-m5-tag"><i class="fa-solid fa-skull text-rose-500"></i> LEVEL 99</span>
+          </div>
+          <h3 class="text-xs sm:text-sm font-bold text-white truncate">Lag Monster Attack</h3>
+          <p class="text-[11px] text-slate-400 truncate">B-Tree vs Full Table Scan</p>
+        </button>
+      </div>
+
+      <!-- Live Mission Execution Arena -->
+      <div id="mission-arena" class="relative rounded-2xl bg-cyber-dark border border-cyber-border p-5 md:p-7 shadow-2xl overflow-hidden">
+        <!-- Dynamic Mission Content -->
+      </div>
+    </div>
+
+    <!-- VIEW 2: TROPHY ROOM & BADGES -->
+    <div id="view-badges" class="hidden space-y-6">
+      <div class="bg-cyber-dark border border-cyber-border rounded-2xl p-6">
+        <div class="flex items-center justify-between border-b border-cyber-border pb-4">
+          <div>
+            <h2 class="text-xl font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-trophy text-amber-400"></i> Hall of Fame & Badges
+            </h2>
+            <p class="text-xs text-slate-400 mt-1">Lencana bergengsi yang membuktikan ketangguhanmu menaklukkan bencana sistem database berskala masif.</p>
+          </div>
+          <div class="text-right">
+            <span class="text-xs font-mono text-slate-400">STATUS REKAYASAWAN:</span>
+            <p id="profile-rank" class="text-sm font-bold text-cyan-400">L1 Junior On-Call SRE</p>
+          </div>
+        </div>
+
+        <div id="badge-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+          <!-- Dynamic Badges -->
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 3: LIVE INCIDENT LOGS -->
+    <div id="view-logs" class="hidden space-y-4">
+      <div class="bg-cyber-black border border-cyber-border rounded-2xl p-5 font-mono text-xs">
+        <div class="flex items-center justify-between border-b border-cyber-border/80 pb-3 mb-3">
+          <div class="flex items-center gap-2 text-cyan-400 font-bold">
+            <i class="fa-solid fa-terminal"></i>
+            <span>SYSTEM CONSOLE LOGS [/var/log/postgresql.log]</span>
+          </div>
+          <button onclick="clearLogs()" class="text-slate-500 hover:text-slate-300 text-[11px]">Bersihkan Layar</button>
+        </div>
+        <div id="terminal-stream" class="h-96 overflow-y-auto space-y-1.5 text-slate-300 pr-2">
+          <!-- Log stream appended dynamically -->
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Global Sound Engine (Web Audio API) -->
+  <script>
+    const SFX = {
+      ctx: null,
+      enabled: true,
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+      },
+      beep(freq = 600, duration = 0.08, type = 'sine', gainVal = 0.08) {
+        if (!this.enabled) return;
+        try {
+          this.init();
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+          gain.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + duration);
+        } catch(e) {}
+      },
+      alarm() {
+        if (!this.enabled) return;
+        this.beep(880, 0.15, 'sawtooth', 0.1);
+        setTimeout(() => this.beep(659, 0.15, 'sawtooth', 0.1), 160);
+      },
+      typing() {
+        this.beep(1200 + Math.random() * 400, 0.03, 'sine', 0.02);
+      },
+      success() {
+        if (!this.enabled) return;
+        [523, 659, 783, 1046].forEach((f, idx) => {
+          setTimeout(() => this.beep(f, 0.15, 'triangle', 0.1), idx * 70);
+        });
+      },
+      explosion() {
+        if (!this.enabled) return;
+        try {
+          this.init();
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(20, this.ctx.currentTime + 0.6);
+          gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 0.6);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.6);
+        } catch(e) {}
+      },
+      fanfare() {
+        if (!this.enabled) return;
+        const notes = [440, 554, 659, 880, 1108];
+        notes.forEach((f, i) => {
+          setTimeout(() => this.beep(f, 0.25, 'triangle', 0.12), i * 90);
+        });
+      }
+    };
+
+    function toggleAudio() {
+      SFX.enabled = !SFX.enabled;
+      const icon = document.getElementById('sound-icon');
+      if (SFX.enabled) {
+        icon.className = 'fa-solid fa-volume-high text-cyan-400';
+        SFX.beep(800, 0.1);
+      } else {
+        icon.className = 'fa-solid fa-volume-xmark text-slate-500';
+      }
+    }
+  </script>
+
+  <!-- Core Game Engine -->
+  <script>
+    // State Persistence
+    const state = {
+      xp: 0,
+      activeMission: 1,
+      health: 65,
+      cpu: 85,
+      badges: {
+        bf_hero: false,
+        cyber_shield: false,
+        norm_master: false,
+        acid_protector: false,
+        boss_slayer: false
+      },
+      timerInterval: null,
+      bossHp: 100,
+      logs: [
+        { time: "09:00:12", type: "CRIT", text: "PostgreSQL: connection pool exhausted! max_connections=500 exceeded." },
+        { time: "09:00:25", type: "WARN", text: "Deadlock detected on table 'accounts' between PID 4820 and PID 4822." },
+        { time: "09:01:05", type: "INFO", text: "SRE Commander initiated incident triage room." }
+      ]
+    };
+
+    // Load Save if exists
+    try {
+      const s = localStorage.getItem('datacraft_incident_state');
+      if (s) Object.assign(state, JSON.parse(s));
+    } catch(e){}
+
+    function saveState() {
+      try {
+        localStorage.setItem('datacraft_incident_state', JSON.stringify(state));
+      } catch(e){}
+      updateHUD();
+    }
+
+    function addLog(text, type = "INFO") {
+      const d = new Date();
+      const time = d.toTimeString().split(' ')[0];
+      state.logs.unshift({ time, type, text });
+      if (state.logs.length > 50) state.logs.pop();
+
+      const container = document.getElementById('terminal-stream');
+      if (container) {
+        const color = type === 'CRIT' ? 'text-rose-400' : type === 'WARN' ? 'text-amber-400' : 'text-cyan-400';
+        const logItem = document.createElement('div');
+        logItem.className = 'flex items-start gap-2';
+        logItem.innerHTML = `<span class="text-slate-500">[${time}]</span> <span class="${color} font-bold">[${type}]</span> <span>${text}</span>`;
+        container.insertBefore(logItem, container.firstChild);
+      }
+    }
+
+    function clearLogs() {
+      state.logs = [];
+      document.getElementById('terminal-stream').innerHTML = '<div class="text-slate-500">// Log buffer cleared.</div>';
+    }
+
+    function updateHUD() {
+      document.getElementById('hud-xp').innerText = state.xp;
+      
+      const badgeCount = Object.values(state.badges).filter(Boolean).length;
+      document.getElementById('hud-badges').innerText = `${badgeCount}/5`;
+
+      document.getElementById('hud-cpu').innerText = `${state.cpu}%`;
+      document.getElementById('hud-cpu-bar').style.width = `${state.cpu}%`;
+      if (state.cpu > 80) {
+        document.getElementById('hud-cpu-bar').className = "bg-rose-500 h-1.5 transition-all duration-300";
+        document.getElementById('hud-cpu').className = "text-rose-400 font-bold";
+      } else if (state.cpu > 50) {
+        document.getElementById('hud-cpu-bar').className = "bg-amber-400 h-1.5 transition-all duration-300";
+        document.getElementById('hud-cpu').className = "text-amber-400 font-bold";
+      } else {
+        document.getElementById('hud-cpu-bar').className = "bg-emerald-400 h-1.5 transition-all duration-300";
+        document.getElementById('hud-cpu').className = "text-emerald-400 font-bold";
+      }
+
+      document.getElementById('hud-health').innerText = `${state.health}%`;
+      document.getElementById('hud-health-bar').style.width = `${state.health}%`;
+
+      // Update badge states on mission tabs
+      if (state.badges.bf_hero) document.getElementById('badge-m1-tag').innerHTML = '<i class="fa-solid fa-check text-emerald-400"></i> RESOLVED';
+      if (state.badges.cyber_shield) document.getElementById('badge-m2-tag').innerHTML = '<i class="fa-solid fa-check text-emerald-400"></i> SECURED';
+      if (state.badges.norm_master) document.getElementById('badge-m3-tag').innerHTML = '<i class="fa-solid fa-check text-emerald-400"></i> NORMALIZED';
+      if (state.badges.acid_protector) document.getElementById('badge-m4-tag').innerHTML = '<i class="fa-solid fa-check text-emerald-400"></i> PROTECTED';
+      if (state.badges.boss_slayer) document.getElementById('badge-m5-tag').innerHTML = '<i class="fa-solid fa-check text-emerald-400"></i> DEFEATED';
+
+      // Update rank
+      const r = document.getElementById('profile-rank');
+      if (r) {
+        if (badgeCount === 5) r.innerText = "⭐ Legendary Chief Database Architect";
+        else if (badgeCount >= 3) r.innerText = "Senior Lead SRE & DBA Commander";
+        else if (badgeCount >= 1) r.innerText = "Incident Response Engineer";
+        else r.innerText = "L1 Junior On-Call SRE";
+      }
+    }
+
+    function switchView(viewName) {
+      SFX.beep(500, 0.05);
+      ['missions', 'badges', 'logs'].forEach(v => {
+        document.getElementById(`view-${v}`).classList.add('hidden');
+        document.getElementById(`tab-${v}`).classList.remove('bg-cyan-500', 'text-black', 'font-bold');
+        document.getElementById(`tab-${v}`).classList.add('text-slate-400');
+      });
+      document.getElementById(`view-${viewName}`).classList.remove('hidden');
+      document.getElementById(`tab-${viewName}`).classList.add('bg-cyan-500', 'text-black', 'font-bold');
+      document.getElementById(`tab-${viewName}`).classList.remove('text-slate-400');
+
+      if (viewName === 'badges') renderBadgesView();
+      if (viewName === 'logs') {
+        const stream = document.getElementById('terminal-stream');
+        stream.innerHTML = state.logs.map(l => {
+          const color = l.type === 'CRIT' ? 'text-rose-400' : l.type === 'WARN' ? 'text-amber-400' : 'text-cyan-400';
+          return `<div class="flex items-start gap-2"><span class="text-slate-500">[${l.time}]</span> <span class="${color} font-bold">[${l.type}]</span> <span>${l.text}</span></div>`;
+        }).join('');
+      }
+    }
+
+    function openMission(num) {
+      SFX.beep(700, 0.05);
+      state.activeMission = num;
+      clearInterval(state.timerInterval);
+
+      // Highlight button
+      document.querySelectorAll('.m-selector').forEach((btn, idx) => {
+        if (idx + 1 === num) {
+          btn.classList.add('border-cyan-400', 'bg-cyber-card');
+          btn.classList.remove('border-cyber-border');
+        } else {
+          btn.classList.remove('border-cyan-400');
+          btn.classList.add('border-cyber-border');
+        }
+      });
+
+      const arena = document.getElementById('mission-arena');
+      if (num === 1) renderMission1(arena);
+      else if (num === 2) renderMission2(arena);
+      else if (num === 3) renderMission3(arena);
+      else if (num === 4) renderMission4(arena);
+      else if (num === 5) renderMission5(arena);
+    }
+
+    // ============================================================
+    // MISI 1: BLACK FRIDAY CRASH (Timer Under Pressure & FK/Index)
+    // ============================================================
+    function renderMission1(container) {
+      SFX.alarm();
+      let timeLeft = 45;
+
+      container.innerHTML = `
+        <div class="space-y-6 alarm-active border-2 border-rose-500/50 p-6 rounded-xl bg-slate-950/80">
+          <div class="flex flex-wrap items-center justify-between gap-4 border-b border-rose-500/30 pb-4">
+            <div>
+              <div class="flex items-center gap-2 text-rose-400 font-mono text-xs font-bold uppercase">
+                <i class="fa-solid fa-triangle-exclamation animate-bounce"></i> EMERGENCY CALLOUT #001
+              </div>
+              <h2 class="text-xl md:text-2xl font-black text-white mt-1">Black Friday Crash: Server Ambruk!</h2>
+              <p class="text-slate-300 text-xs md:text-sm mt-1">
+                Trafik melonjak 100x lipat! Database toko online terkunci total karena tabel <code class="text-cyan-300 font-mono">order_items</code> tidak memiliki Foreign Key ke <code class="text-cyan-300 font-mono">orders</code> dan kolom pencarian status tidak memiliki INDEX, menyebabkan Full Table Scan 5 juta baris!
+              </p>
+            </div>
+            
+            <div class="bg-rose-950/80 border border-rose-500 px-4 py-2 rounded-xl text-center">
+              <span class="text-[10px] text-rose-300 uppercase font-mono block">DEADLINE SERVER BOOM</span>
+              <span id="m1-timer" class="text-2xl font-black font-mono text-rose-400 animate-pulse">00:45</span>
+            </div>
+          </div>
+
+          <!-- Problem Diagnostic Box -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div class="bg-cyber-black p-4 rounded-xl border border-rose-900/60 font-mono text-xs space-y-3">
+              <div class="flex justify-between text-slate-400 border-b border-slate-800 pb-2">
+                <span>POSTGRES SLOW QUERY LOG</span>
+                <span class="text-rose-400">STATUS: 504 TIMEOUT</span>
+              </div>
+              <p class="text-rose-300 leading-relaxed">
+                ERROR: canceling statement due to statement timeout (30000ms)<br>
+                QUERY: SELECT * FROM order_items WHERE user_id = 98421 AND order_id = 459123;<br>
+                EXPLAIN: Seq Scan on order_items (cost=0.00..128941.00 rows=1)<br>
+                <span class="text-amber-400">WARNING: Orphaned records found! order_items inserted with non-existing order_id!</span>
+              </p>
+            </div>
+
+            <!-- Fix Checklist Interaktif -->
+            <div class="bg-cyber-card p-4 rounded-xl border border-cyber-border space-y-3">
+              <h4 class="text-xs font-bold uppercase font-mono text-cyan-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-wrench"></i> Terapkan Skrip Hotfix DDL Segera:
+              </h4>
+
+              <div class="space-y-2 text-xs">
+                <label class="flex items-start gap-2.5 p-2.5 rounded-lg bg-slate-900/80 border border-slate-800 hover:border-slate-700 cursor-pointer">
+                  <input type="checkbox" id="m1-fix-fk" class="mt-0.5 rounded accent-cyan-500">
+                  <div>
+                    <span class="font-bold text-white">Tambahkan Foreign Key (FK) Integrity Constraint</span>
+                    <p class="text-slate-400 text-[11px]">ALTER TABLE order_items ADD CONSTRAINT fk_orders FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE;</p>
+                  </div>
+                </label>
+
+                <label class="flex items-start gap-2.5 p-2.5 rounded-lg bg-slate-900/80 border border-slate-800 hover:border-slate-700 cursor-pointer">
+                  <input type="checkbox" id="m1-fix-idx" class="mt-0.5 rounded accent-cyan-500">
+                  <div>
+                    <span class="font-bold text-white">Tambahkan Composite B-Tree Index</span>
+                    <p class="text-slate-400 text-[11px]">CREATE INDEX idx_order_items_user_order ON order_items (user_id, order_id);</p>
+                  </div>
+                </label>
+
+                <label class="flex items-start gap-2.5 p-2.5 rounded-lg bg-slate-900/80 border border-slate-800 hover:border-slate-700 cursor-pointer">
+                  <input type="checkbox" id="m1-fix-bad" class="mt-0.5 rounded accent-cyan-500">
+                  <div>
+                    <span class="font-bold text-rose-300">[SALAH] Hapus Semua Data Lama (TRUNCATE TABLE)</span>
+                    <p class="text-slate-400 text-[11px]">TRUNCATE TABLE orders; (Akan memusnahkan omzet toko miliar rupiah!)</p>
+                  </div>
+                </label>
+              </div>
+
+              <div class="pt-2">
+                <button onclick="submitMission1()" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-rose-600 via-rose-500 to-indigo-600 hover:brightness-110 font-bold text-xs uppercase tracking-wider text-white shadow-lg shadow-rose-600/30 transition">
+                  <i class="fa-solid fa-play"></i> Eksekusi Emergency Migration DDL
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Start countdown timer
+      state.timerInterval = setInterval(() => {
+        timeLeft--;
+        const timerEl = document.getElementById('m1-timer');
+        if (timerEl) {
+          timerEl.innerText = `00:${timeLeft < 10 ? '0' : ''}${timeLeft}`;
+        }
+        if (timeLeft <= 0) {
+          clearInterval(state.timerInterval);
+          SFX.explosion();
+          state.health = Math.max(0, state.health - 35);
+          state.cpu = 100;
+          saveState();
+          addLog("SERVER CRASH! Black Friday sales stopped. Estimated losses: $250,000.", "CRIT");
+          alert("💥 WAKTU HABIS! Server overload dan terjadi crash fatal! Coba lagi!");
+          openMission(1);
+        }
+      }, 1000);
+    }
+
+    function submitMission1() {
+      const fk = document.getElementById('m1-fix-fk').checked;
+      const idx = document.getElementById('m1-fix-idx').checked;
+      const bad = document.getElementById('m1-fix-bad').checked;
+
+      if (bad) {
+        SFX.explosion();
+        alert("❌ FATAL ERROR: Kamu menghapus data toko! CFO langsung memanggilmu ke ruang sidang!");
+        return;
+      }
+
+      if (fk && idx) {
+        clearInterval(state.timerInterval);
+        SFX.fanfare();
+        state.xp += 250;
+        state.badges.bf_hero = true;
+        state.cpu = 28;
+        state.health = 95;
+        saveState();
+        addLog("INCIDENT #101 RESOLVED: Composite Index & Foreign Key deployed. Query latency dropped to 4ms.", "INFO");
+        alert("🎉 MISI SUKSES! Composite Index memangkas waktu query dari 30 detik ke 4 milidetik! Sistem berhasil diselamatkan!");
+        openMission(2);
+      } else {
+        SFX.beep(200, 0.2, 'sawtooth');
+        alert("⚠️ Perbaikan belum lengkap! Kamu harus mencegah data orphan (FK) DAN mempercepat query lookup (Index)!");
+      }
+    }
+
+    // ============================================================
+    // MISI 2: DATA LEAK HEIST (SQLi & Hashing PII Encryption)
+    // ============================================================
+    function renderMission2(container) {
+      container.innerHTML = `
+        <div class="space-y-6 border border-cyan-500/40 p-6 rounded-xl bg-slate-950/80">
+          <div class="flex flex-wrap items-center justify-between gap-4 border-b border-cyan-500/30 pb-4">
+            <div>
+              <div class="flex items-center gap-2 text-cyan-400 font-mono text-xs font-bold uppercase">
+                <i class="fa-solid fa-user-secret"></i> SECURITY INCIDENT #102
+              </div>
+              <h2 class="text-xl md:text-2xl font-black text-white mt-1">Data Leak Heist: Serangan Hacker SQL Injection!</h2>
+              <p class="text-slate-300 text-xs md:text-sm mt-1">
+                Hacker menyusupkan input jahat <code class="text-rose-400 font-mono">' OR '1'='1</code> ke form login, dan mendownload password plaintext jutaan pengguna! Rancang skema pertahanan database baru yang tahan retas.
+              </p>
+            </div>
+            <div class="text-xs bg-slate-900 border border-cyan-500/40 px-3 py-1.5 rounded-lg text-cyan-300 font-mono">
+              REWARD: +300 XP &amp; CYBER SHIELD BADGE
+            </div>
+          </div>
+
+          <!-- Step 1: Uji SQL Injection di Simulator Terminal -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div class="bg-cyber-black p-4 rounded-xl border border-slate-800 space-y-3 font-mono text-xs">
+              <span class="text-cyan-400 font-bold block">// TARGET LOGIN VULNERABLE QUERY</span>
+              <p class="text-slate-400">SELECT * FROM users WHERE username = '<span id="sqli-val" class="text-rose-400">admin</span>' AND password = '***';</p>
+              
+              <div class="space-y-2 pt-2">
+                <label class="block text-slate-300 text-[11px]">Masukkan Payload SQL Injection untuk Menguji Kelemahan:</label>
+                <div class="flex gap-2">
+                  <input type="text" id="sqli-input" value="' OR '1'='1" class="flex-1 bg-slate-900 border border-slate-700 rounded px-3 py-1.5 text-xs text-rose-400 font-mono focus:outline-none focus:border-rose-400">
+                  <button onclick="testSQLiPayload()" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded font-bold text-xs">Simulasi Serangan</button>
+                </div>
+              </div>
+              <div id="sqli-result" class="p-2.5 rounded bg-slate-900 border border-slate-800 text-[11px] text-slate-300">
+                Ketik payload atau klik tombol untuk melihat bagaimana query dibobol!
+              </div>
+            </div>
+
+            <!-- Step 2: Desain Schema Pengamanan Password & PII -->
+            <div class="bg-cyber-card p-4 rounded-xl border border-cyber-border space-y-3">
+              <h4 class="text-xs font-bold uppercase font-mono text-emerald-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-shield-virus"></i> Arsitektur Skema Database Anti-Bocor:
+              </h4>
+
+              <div class="space-y-3 text-xs">
+                <div>
+                  <label class="block text-slate-300 font-semibold mb-1">1. Bagaimana cara menyimpan kolom <code class="text-cyan-300">password</code> yang benar?</label>
+                  <select id="m2-pass-type" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-200">
+                    <option value="">-- Pilih Tipe Penyimpanan --</option>
+                    <option value="plaintext">VARCHAR(255) Plaintext biasa agar mudah dibaca admin</option>
+                    <option value="base64">Enkripsi Base64 (bisa didecode balik dalam 1 detik)</option>
+                    <option value="argon2_bcrypt">VARCHAR(255) dengan Password-Hashing satu arah (Argon2id / BCrypt) + Unique Salt</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-slate-300 font-semibold mb-1">2. Bagaimana mengamankan Query agar terbebas dari SQL Injection selamanya?</label>
+                  <select id="m2-query-type" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-200">
+                    <option value="">-- Pilih Pola Query Aman --</option>
+                    <option value="concat">String Concatenation ("SELECT * FROM users WHERE user=" + input)</option>
+                    <option value="prepared_statements">Prepared Statements / Parameterized Queries ($1, $2 atau ? placeholder)</option>
+                    <option value="disable_firewall">Matikan log database agar serangan tidak terlihat</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="pt-2">
+                <button onclick="submitMission2()" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-emerald-600 hover:brightness-110 font-bold text-xs uppercase tracking-wider text-white shadow-lg shadow-cyan-600/30 transition">
+                  <i class="fa-solid fa-lock"></i> Kunci Pertahanan Database
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function testSQLiPayload() {
+      SFX.typing();
+      const val = document.getElementById('sqli-input').value;
+      const res = document.getElementById('sqli-result');
+      if (val.includes("' OR '1'='1") || val.includes("' OR 1=1")) {
+        SFX.alarm();
+        res.className = "p-2.5 rounded bg-rose-950/80 border border-rose-500 text-[11px] text-rose-300";
+        res.innerHTML = `⚠️ <b>AUTH BYPASSED!</b> Query menjadi: <code>WHERE username = '' OR '1'='1'</code>. Kondisi '1'='1' selalu bernilai TRUE, hacker langsung login sebagai akun pertama (SUPER ADMIN)!`;
+      } else {
+        res.className = "p-2.5 rounded bg-slate-900 border border-slate-800 text-[11px] text-slate-400";
+        res.innerHTML = `Query tereksekusi dengan nilai: "${val}". Coba masukkan payload <code>' OR '1'='1</code>`;
+      }
+    }
+
+    function submitMission2() {
+      const pass = document.getElementById('m2-pass-type').value;
+      const qry = document.getElementById('m2-query-type').value;
+
+      if (pass === 'argon2_bcrypt' && qry === 'prepared_statements') {
+        SFX.fanfare();
+        state.xp += 300;
+        state.badges.cyber_shield = true;
+        saveState();
+        addLog("SECURITY AUDIT PASSED: Parameterized queries implemented and password hashed with Argon2id.", "INFO");
+        alert("🛡️ DATA SECURED! Dengan Parameterized Query, input hacker diperlakukan murni sebagai literal string, bukan kode yang dieksekusi! Password user juga terenkripsi!");
+        openMission(3);
+      } else {
+        SFX.beep(250, 0.2, 'sawtooth');
+        alert("❌ Skema pertahanan belum tepat. Ingat: Password wajib di-hash satu arah dengan Salt (BCrypt/Argon2), dan query wajib memakai Parameterized Statements!");
+      }
+    }
+
+    // ============================================================
+    // MISI 3: NORMALISASI RESTO (1NF, 2NF, 3NF Visual Drag & Split)
+    // ============================================================
+    let m3SelectedTable = 'customers';
+    let m3AssignedCols = {
+      customers: ['id_pelanggan'],
+      orders: ['id_pesanan', 'tanggal'],
+      menu: ['id_menu'],
+      order_items: ['id_item']
+    };
+
+    function renderMission3(container) {
+      container.innerHTML = `
+        <div class="space-y-6 border border-indigo-500/40 p-6 rounded-xl bg-slate-950/80">
+          <div class="flex flex-wrap items-center justify-between gap-4 border-b border-indigo-500/30 pb-4">
+            <div>
+              <div class="flex items-center gap-2 text-indigo-400 font-mono text-xs font-bold uppercase">
+                <i class="fa-solid fa-cubes-stacked"></i> REFACTORING ARCHITECTURE #103
+              </div>
+              <h2 class="text-xl md:text-2xl font-black text-white mt-1">Normalisasi Resto Cepat Saji (1NF, 2NF, 3NF)</h2>
+              <p class="text-slate-300 text-xs md:text-sm mt-1">
+                Restoran menyimpan seluruh data struk belanja dalam SATU tabel raksasa: jika kasir typo nama menu, 10.000 riwayat transaksi ikut rusak! Pecah dan alokasikan atribut ke 4 tabel normalisasi yang tepat!
+              </p>
+            </div>
+            <div class="text-xs bg-slate-900 border border-indigo-500/40 px-3 py-1.5 rounded-lg text-indigo-300 font-mono">
+              TARGET: 3NF RELATIONAL MODEL
+            </div>
+          </div>
+
+          <!-- Pool of Columns to Allocate -->
+          <div class="bg-cyber-card p-4 rounded-xl border border-cyber-border space-y-3">
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-bold text-slate-300 uppercase">Daftar Kolom dari Struk Raksasa (Klik kolom lalu klik tabel tujuan):</span>
+              <span class="text-cyan-400 font-mono text-[11px]">Tabel Aktif Dipilih: <b id="active-target-tbl-label" class="underline text-amber-400">customers</b></span>
+            </div>
+
+            <div id="m3-column-pool" class="flex flex-wrap gap-2 pt-1">
+              ${[
+                { id: 'nama_pelanggan', label: '👤 nama_pelanggan' },
+                { id: 'nomor_hp', label: '📱 no_hp_pelanggan' },
+                { id: 'nama_makanan', label: '🍔 nama_menu' },
+                { id: 'harga_satuan', label: '💵 harga_satuan' },
+                { id: 'jumlah_beli', label: '🔢 jumlah_qty' },
+                { id: 'total_transaksi', label: '🧾 total_bayar' }
+              ].map(c => `
+                <button onclick="assignColToTable('${c.id}')" id="col-btn-${c.id}" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-900 text-xs text-slate-300 hover:border-cyan-400 transition font-mono">
+                  ${c.label}
+                </button>
+              `).join('')}
+            </div>
+          </div>
+
+          <!-- 4 Target Relational Tables Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            
+            <!-- Table 1: Customers -->
+            <div onclick="setM3TargetTable('customers')" id="tbl-box-customers" class="p-3.5 rounded-xl border-2 border-amber-400 bg-slate-900 cursor-pointer transition space-y-2">
+              <div class="flex justify-between items-center text-xs font-bold text-amber-400 font-mono border-b border-slate-800 pb-2">
+                <span>1. tb_customers</span>
+                <span class="text-[10px] bg-amber-400/20 px-1.5 rounded">PILIH</span>
+              </div>
+              <div id="cols-in-customers" class="space-y-1 font-mono text-[11px] text-slate-300">
+                <div class="p-1 rounded bg-slate-950 text-amber-400">🔑 id_pelanggan (PK)</div>
+              </div>
+            </div>
+
+            <!-- Table 2: Orders -->
+            <div onclick="setM3TargetTable('orders')" id="tbl-box-orders" class="p-3.5 rounded-xl border border-slate-800 bg-slate-900 cursor-pointer transition space-y-2">
+              <div class="flex justify-between items-center text-xs font-bold text-cyan-400 font-mono border-b border-slate-800 pb-2">
+                <span>2. tb_orders</span>
+                <span class="text-[10px] bg-slate-800 px-1.5 rounded">PILIH</span>
+              </div>
+              <div id="cols-in-orders" class="space-y-1 font-mono text-[11px] text-slate-300">
+                <div class="p-1 rounded bg-slate-950 text-cyan-400">🔑 id_pesanan (PK)</div>
+                <div class="p-1 rounded bg-slate-950">tanggal</div>
+              </div>
+            </div>
+
+            <!-- Table 3: Menu -->
+            <div onclick="setM3TargetTable('menu')" id="tbl-box-menu" class="p-3.5 rounded-xl border border-slate-800 bg-slate-900 cursor-pointer transition space-y-2">
+              <div class="flex justify-between items-center text-xs font-bold text-emerald-400 font-mono border-b border-slate-800 pb-2">
+                <span>3. tb_menu</span>
+                <span class="text-[10px] bg-slate-800 px-1.5 rounded">PILIH</span>
+              </div>
+              <div id="cols-in-menu" class="space-y-1 font-mono text-[11px] text-slate-300">
+                <div class="p-1 rounded bg-slate-950 text-emerald-400">🔑 id_menu (PK)</div>
+              </div>
+            </div>
+
+            <!-- Table 4: Order Items -->
+            <div onclick="setM3TargetTable('order_items')" id="tbl-box-order_items" class="p-3.5 rounded-xl border border-slate-800 bg-slate-900 cursor-pointer transition space-y-2">
+              <div class="flex justify-between items-center text-xs font-bold text-rose-400 font-mono border-b border-slate-800 pb-2">
+                <span>4. tb_order_items</span>
+                <span class="text-[10px] bg-slate-800 px-1.5 rounded">PILIH</span>
+              </div>
+              <div id="cols-in-order_items" class="space-y-1 font-mono text-[11px] text-slate-300">
+                <div class="p-1 rounded bg-slate-950 text-rose-400">🔑 id_item (PK)</div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="flex justify-end pt-2">
+            <button onclick="verifyMission3()" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 hover:brightness-110 font-bold text-xs uppercase tracking-wider text-white shadow-lg transition">
+              <i class="fa-solid fa-check-double"></i> Verifikasi Hasil Normalisasi 3NF
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function setM3TargetTable(tbl) {
+      SFX.beep(550, 0.05);
+      m3SelectedTable = tbl;
+      document.getElementById('active-target-tbl-label').innerText = tbl;
+      ['customers', 'orders', 'menu', 'order_items'].forEach(t => {
+        const el = document.getElementById(`tbl-box-${t}`);
+        if (t === tbl) {
+          el.className = "p-3.5 rounded-xl border-2 border-amber-400 bg-slate-900 cursor-pointer transition space-y-2";
+        } else {
+          el.className = "p-3.5 rounded-xl border border-slate-800 bg-slate-900 cursor-pointer transition space-y-2";
+        }
+      });
+    }
+
+    function assignColToTable(colId) {
+      SFX.typing();
+      // Remove from all other tables first
+      for (let t in m3AssignedCols) {
+        m3AssignedCols[t] = m3AssignedCols[t].filter(c => c !== colId);
+      }
+      m3AssignedCols[m3SelectedTable].push(colId);
+
+      // Highlight button
+      const btn = document.getElementById(`col-btn-${colId}`);
+      if (btn) {
+        btn.classList.add('border-cyan-400', 'bg-cyan-950/60', 'text-cyan-300');
+      }
+
+      // Update UI column list
+      renderM3Columns();
+    }
+
+    function renderM3Columns() {
+      for (let t in m3AssignedCols) {
+        const cContainer = document.getElementById(`cols-in-${t}`);
+        if (!cContainer) continue;
+        cContainer.innerHTML = m3AssignedCols[t].map(col => `
+          <div class="p-1 rounded bg-slate-950 flex justify-between items-center text-[10px]">
+            <span>${col}</span>
+            <span class="text-slate-600">✓</span>
+          </div>
+        `).join('');
+      }
+    }
+
+    function verifyMission3() {
+      // Correct mappings:
+      // customers: id_pelanggan, nama_pelanggan, nomor_hp
+      // orders: id_pesanan, tanggal, total_transaksi
+      // menu: id_menu, nama_makanan, harga_satuan
+      // order_items: id_item, jumlah_beli
+      const cValid = m3AssignedCols.customers.includes('nama_pelanggan') && m3AssignedCols.customers.includes('nomor_hp');
+      const oValid = m3AssignedCols.orders.includes('total_transaksi');
+      const mValid = m3AssignedCols.menu.includes('nama_makanan') && m3AssignedCols.menu.includes('harga_satuan');
+      const oiValid = m3AssignedCols.order_items.includes('jumlah_beli');
+
+      if (cValid && oValid && mValid && oiValid) {
+        SFX.fanfare();
+        state.xp += 350;
+        state.badges.norm_master = true;
+        saveState();
+        addLog("SCHEMA NORMALIZED: 3NF decomposition complete. Zero update anomalies detected.", "INFO");
+        alert("🧩 SEMPURNA! Struktur tabel kini memenuhi 1NF, 2NF, dan 3NF! Menghapus menu tidak lagi menghapus riwayat pesanan, dan tidak ada lagi duplikasi data!");
+        openMission(4);
+      } else {
+        SFX.beep(200, 0.2, 'sawtooth');
+        alert("⚠️ Normalisasi belum tepat! Cek: 'nama_pelanggan' milik Customer, 'nama_menu & harga_satuan' milik Menu, dan 'jumlah_beli' adalah atribut transaksi Order Items!");
+      }
+    }
+
+    // ============================================================
+    // MISI 4: BANK DIGITAL ACID & DEADLOCK SAVIOR
+    // ============================================================
+    function renderMission4(container) {
+      container.innerHTML = `
+        <div class="space-y-6 border border-amber-500/40 p-6 rounded-xl bg-slate-950/80">
+          <div class="flex flex-wrap items-center justify-between gap-4 border-b border-amber-500/30 pb-4">
+            <div>
+              <div class="flex items-center gap-2 text-amber-400 font-mono text-xs font-bold uppercase">
+                <i class="fa-solid fa-money-bill-transfer"></i> FINANCIAL INTEGRITY #104
+              </div>
+              <h2 class="text-xl md:text-2xl font-black text-white mt-1">Krisis Bank Digital: Deadlock &amp; Race Condition!</h2>
+              <p class="text-slate-300 text-xs md:text-sm mt-1">
+                Ribuan nasabah menarik uang serentak via ATM dan Mobile Banking. Karena transaksi tidak diisolasi secara atomik, saldo bank berkurang menjadi MINUS (Double Spending Bug)!
+              </p>
+            </div>
+            <div class="text-xs bg-slate-900 border border-amber-500/40 px-3 py-1.5 rounded-lg text-amber-300 font-mono">
+              CORE PRINCIPLE: ACID COMPLIANCE
+            </div>
+          </div>
+
+          <!-- Interactive Simulation Arena -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <!-- Live Account Simulator -->
+            <div class="bg-cyber-black p-5 rounded-xl border border-slate-800 space-y-4">
+              <div class="flex justify-between items-center text-xs font-mono border-b border-slate-800 pb-2">
+                <span class="text-slate-400">SALDO REKENING KORBAN:</span>
+                <span id="bank-balance" class="text-emerald-400 font-bold text-base">Rp 100.000</span>
+              </div>
+
+              <div class="p-3 bg-slate-900 rounded-lg text-xs space-y-2">
+                <p class="text-slate-300"><b>Skenario Serangan:</b> 2 Penarikan Rp 100.000 terjadi pada milidetik yang sama persis.</p>
+                <div class="flex gap-2">
+                  <button onclick="simulateRaceCondition()" class="flex-1 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs">
+                    Simulasi Tanpa ACID (Race Condition)
+                  </button>
+                </div>
+                <p id="race-result" class="text-[11px] text-slate-400 pt-1"></p>
+              </div>
+            </div>
+
+            <!-- Transaction Configurator -->
+            <div class="bg-cyber-card p-5 rounded-xl border border-cyber-border space-y-3">
+              <h4 class="text-xs font-bold uppercase font-mono text-amber-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-code"></i> Perbaiki Blok Transaksi SQL (ACID Safe):
+              </h4>
+
+              <div class="space-y-3 text-xs">
+                <div>
+                  <label class="block text-slate-300 font-semibold mb-1">1. Mekanisme Locking untuk Mencegah Race Condition:</label>
+                  <select id="m4-lock" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-200">
+                    <option value="">-- Pilih Strategi Locking --</option>
+                    <option value="none">SELECT saldo FROM accounts (Tanpa lock, baca langsung)</option>
+                    <option value="pessimistic">SELECT saldo FROM accounts WHERE id = 1 FOR UPDATE (Pessimistic Row Lock)</option>
+                    <option value="sleep">Tidur sejenak dengan pg_sleep(5)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-slate-300 font-semibold mb-1">2. Kontrol Transaksi jika Saldo Kurang saat Penarikan:</label>
+                  <select id="m4-atomic" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-200">
+                    <option value="">-- Kontrol Transaksi Atomik --</option>
+                    <option value="commit_always">Tetap COMMIT meskipun saldo menjadi negatif</option>
+                    <option value="rollback">IF saldo < penarikan THEN ROLLBACK; ELSE COMMIT; END IF;</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="pt-2">
+                <button onclick="submitMission4()" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-emerald-600 hover:brightness-110 font-bold text-xs uppercase tracking-wider text-white shadow-lg transition">
+                  <i class="fa-solid fa-vault"></i> Validasi Perlindungan Perbankan
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      `;
+    }
+
+    function simulateRaceCondition() {
+      SFX.beep(200, 0.15, 'sawtooth');
+      const balEl = document.getElementById('bank-balance');
+      const res = document.getElementById('race-result');
+      balEl.innerText = "Rp -100.000 (MINUS!)";
+      balEl.className = "text-rose-500 font-bold text-base animate-pulse";
+      res.className = "text-[11px] text-rose-400 font-mono";
+      res.innerHTML = "🚨 BAHAYA: Saldo asli Rp 100.000, tapi nasabah berhasil menarik Rp 200.000 karena thread kedua membaca saldo lama sebelum thread pertama sempat mengupdate!";
+    }
+
+    function submitMission4() {
+      const lock = document.getElementById('m4-lock').value;
+      const atomic = document.getElementById('m4-atomic').value;
+
+      if (lock === 'pessimistic' && atomic === 'rollback') {
+        SFX.fanfare();
+        state.xp += 400;
+        state.badges.acid_protector = true;
+        saveState();
+        addLog("FINANCIAL TRANSACTION SECURED: Strict Row-level lock (FOR UPDATE) & atomic ROLLBACK verified.", "INFO");
+        alert("💰 INTEGRITAS TERJAGA! Transaksi bersifat Atomic & Isolated. Jika saldo kurang, transaksi dibatalkan (ROLLBACK) tanpa merusak konsistensi saldo!");
+        openMission(5);
+      } else {
+        SFX.beep(200, 0.2, 'sawtooth');
+        alert("❌ Masih ada celah kebocoran saldo! Wajib gunakan kunci eksklusif 'FOR UPDATE' dan 'ROLLBACK' jika saldo tidak mencukupi!");
+      }
+    }
+
+    // ============================================================
+    // MISI 5: LIVE BOSS BATTLE: LAG MONSTER (Indexing & Tuning)
+    // ============================================================
+    let bossInterval = null;
+
+    function renderMission5(container) {
+      state.bossHp = 100;
+      SFX.alarm();
+
+      container.innerHTML = `
+        <div class="space-y-6 border-2 border-rose-600 p-6 rounded-xl bg-slate-950/90 relative overflow-hidden">
+          
+          <!-- Boss Banner Header -->
+          <div class="flex flex-wrap items-center justify-between gap-4 border-b border-rose-500/40 pb-4">
+            <div>
+              <div class="flex items-center gap-2 text-rose-500 font-mono text-xs font-bold uppercase tracking-wider animate-pulse">
+                <i class="fa-solid fa-skull"></i> ULTIMATE SRE INCIDENT: BOSS BATTLE
+              </div>
+              <h2 class="text-xl md:text-3xl font-black text-white mt-1">Lag Monster 'TableScan' Menyerang!</h2>
+              <p class="text-slate-300 text-xs md:text-sm mt-1">
+                Query laporan tahunan menyeleksi 100 juta baris tanpa indeks! CPU server menyentuh 100%! Gunakan B-Tree Index dan teknik Query Tuning yang tepat sebelum server meledak!
+              </p>
+            </div>
+            
+            <div class="bg-rose-950 border border-rose-500 px-5 py-2.5 rounded-xl text-center min-w-[160px]">
+              <span class="text-[10px] text-rose-300 uppercase font-mono block">BOSS HP (LATENCY)</span>
+              <span id="boss-hp-text" class="text-2xl font-black font-mono text-rose-400">100 / 100</span>
+              <div class="w-full bg-slate-800 rounded-full h-2 mt-1">
+                <div id="boss-hp-bar" class="bg-rose-500 h-2 rounded-full transition-all duration-300" style="width: 100%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Battle Visualizer -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+            
+            <!-- Monster visual -->
+            <div class="p-6 bg-cyber-card border border-rose-500/50 rounded-xl flex flex-col items-center justify-center space-y-2">
+              <div class="text-5xl animate-bounce">👾</div>
+              <h3 class="text-sm font-bold text-rose-400 font-mono">Seq Scan Titan</h3>
+              <p class="text-[11px] text-slate-400">Kecepatan: 15.000 ms / Query</p>
+            </div>
+
+            <!-- Weapon Tuning Selection -->
+            <div class="md:col-span-2 bg-cyber-card p-5 rounded-xl border border-cyber-border space-y-3 text-left">
+              <h4 class="text-xs font-bold uppercase font-mono text-cyan-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-crosshairs"></i> Luncurkan Serangan Optimasi SQL:
+              </h4>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                <button onclick="attackBoss(35, 'btree')" class="p-3 rounded-lg border border-cyan-500/60 bg-cyan-950/20 hover:bg-cyan-900/30 text-left transition">
+                  <span class="font-bold text-cyan-300 block">⚡ Pasang B-Tree Index</span>
+                  <span class="text-[11px] text-slate-400">CREATE INDEX idx_created_at ON logs(created_at); (-35 HP)</span>
+                </button>
+
+                <button onclick="attackBoss(25, 'limit')" class="p-3 rounded-lg border border-emerald-500/60 bg-emerald-950/20 hover:bg-emerald-900/30 text-left transition">
+                  <span class="font-bold text-emerald-300 block">🎯 Tambahkan LIMIT & Paging</span>
+                  <span class="text-[11px] text-slate-400">Hindari kirim 100.000 baris ke frontend (-25 HP)</span>
+                </button>
+
+                <button onclick="attackBoss(40, 'cover')" class="p-3 rounded-lg border border-indigo-500/60 bg-indigo-950/20 hover:bg-indigo-900/30 text-left transition">
+                  <span class="font-bold text-indigo-300 block">🛡️ Covering Index (INCLUDE)</span>
+                  <span class="text-[11px] text-slate-400">Index-Only Scan tanpa menyentuh heap table (-40 HP)</span>
+                </button>
+
+                <button onclick="attackBoss(-20, 'select_all')" class="p-3 rounded-lg border border-rose-500/60 bg-rose-950/20 hover:bg-rose-900/30 text-left transition">
+                  <span class="font-bold text-rose-300 block">💥 [JEBAKAN] Jalankan SELECT *</span>
+                  <span class="text-[11px] text-slate-400">Tarik semua kolom blob biner tanpa filter (+20 HP Boss)</span>
+                </button>
+              </div>
+
+              <div id="boss-log" class="p-2.5 rounded bg-slate-900 border border-slate-800 text-[11px] text-cyan-300 font-mono">
+                Pilih optimasi SQL yang tepat untuk memangkas latensi monster hingga 0!
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      `;
+    }
+
+    function attackBoss(dmg, type) {
+      if (dmg < 0) {
+        SFX.explosion();
+        state.bossHp = Math.min(100, state.bossHp + 20);
+        document.getElementById('boss-log').innerHTML = "<span class='text-rose-400'>❌ Salah strategi! SELECT * menarik seluruh kolom mentah, server semakin sesak napas! Boss memulihkan 20 HP!</span>";
+      } else {
+        SFX.typing();
+        setTimeout(() => SFX.beep(750, 0.1, 'triangle'), 60);
+        state.bossHp = Math.max(0, state.bossHp - dmg);
+        document.getElementById('boss-log').innerHTML = `<span class='text-emerald-400'>⚔️ SERANGAN BERHASIL! Latensi terpangkas drastis! Boss kehilangan ${dmg} HP!</span>`;
+      }
+
+      document.getElementById('boss-hp-text').innerText = `${state.bossHp} / 100`;
+      document.getElementById('boss-hp-bar').style.width = `${state.bossHp}%`;
+
+      if (state.bossHp <= 0) {
+        SFX.fanfare();
+        state.xp += 500;
+        state.cpu = 15;
+        state.health = 100;
+        state.badges.boss_slayer = true;
+        saveState();
+        addLog("BOSS DEFEATED: Seq Scan replaced with B-Tree Index-Only Scan. Query latency is now 0.8ms.", "INFO");
+        alert("🏆 VICTORY ROYALE! Lag Monster berhasil dihancurkan! Latensi database kini di bawah 1 milidetik! Seluruh server startup kembali hijau dan stabil!");
+        switchView('badges');
+      }
+    }
+
+    // ============================================================
+    // TROPHY ROOM RENDERING
+    // ============================================================
+    const allBadges = [
+      { id: "bf_hero", title: "Black Friday Savior", icon: "fa-fire-extinguisher", desc: "Berhasil menyelamatkan toko online di bawah ancaman timer server crash dengan Index & FK." },
+      { id: "cyber_shield", title: "Cyber Shield Defender", icon: "fa-shield-halved", desc: "Membendung serangan SQL Injection dan menerapkan hashing password modern yang tak tertembus." },
+      { id: "norm_master", title: "Normalization Master", icon: "fa-diagram-project", desc: "Mengurai tabel raksasa menjadi arsitektur 3NF yang bebas dari anomali data." },
+      { id: "acid_protector", title: "ACID Vault Guardian", icon: "fa-vault", desc: "Mencegah race condition dan transaksi minus pada simulasi perbankan berlatensi tinggi." },
+      { id: "boss_slayer", title: "Legendary Query Ninja", icon: "fa-bolt-lightning", desc: "Mengalahkan Lag Monster dengan transformasi Full Table Scan ke B-Tree Indexing." }
+    ];
+
+    function renderBadgesView() {
+      const container = document.getElementById('badge-grid');
+      container.innerHTML = allBadges.map(b => {
+        const unlocked = state.badges[b.id];
+        return `
+          <div class="p-5 rounded-xl border ${unlocked ? 'border-amber-400/80 bg-gradient-to-b from-amber-950/20 to-slate-900 shadow-lg shadow-amber-500/10' : 'border-slate-800 bg-slate-950 opacity-50'} transition space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="w-12 h-12 rounded-xl ${unlocked ? 'bg-amber-400/20 text-amber-400 border border-amber-400/40' : 'bg-slate-800 text-slate-500'} flex items-center justify-center text-xl">
+                <i class="fa-solid ${b.icon}"></i>
+              </div>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded ${unlocked ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-slate-800 text-slate-500'}">
+                ${unlocked ? 'UNLOCKED' : 'LOCKED'}
+              </span>
+            </div>
+            <div>
+              <h4 class="text-sm font-bold ${unlocked ? 'text-white' : 'text-slate-400'}">${b.title}</h4>
+              <p class="text-xs text-slate-400 mt-1 leading-relaxed">${b.desc}</p>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Initialize War Room
+    window.addEventListener('load', () => {
+      updateHUD();
+      openMission(1);
+    });
+  </script>
+</body>
+</html>
