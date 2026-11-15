@@ -1,0 +1,585 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Manrope:wght@200..800&display=swap');
+
+
+
+
+html, 
+body, 
+div, 
+span, 
+applet,
+object,
+h1, 
+h2,
+h3, 
+h4, 
+h5, 
+h6, 
+p, 
+blockquote,
+a, 
+abbr, 
+acronym, 
+address, 
+big, 
+cite,
+del, 
+dfn, 
+em, 
+img, 
+ins, 
+kbd, 
+q, 
+s,
+small, 
+strike, 
+strong, 
+sub, 
+sup, 
+tt,
+b, 
+u, 
+i, 
+center,
+dl, 
+dt, 
+dd, 
+ol, 
+ul, 
+li,
+fieldset, 
+form, 
+label, 
+legend,
+table, 
+caption, 
+tbody, 
+tfoot, 
+thead,
+article, 
+aside, 
+canvas, 
+details, 
+embed,
+figure, 
+figcaption, 
+footer, 
+header,
+menu, 
+nav, 
+output, 
+ruby, 
+section,
+time, 
+mark, 
+audio, 
+video {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    font-weight: normal;
+    vertical-align: baseline;
+    background: transparent;
+    box-sizing: border-box;
+}
+
+html {
+    min-height: 100%;
+    background-color: #19171d;
+}
+
+body {
+   font-family: Manrope, Arial, Helvetica, sans-serif;
+   background-color: #f4f1f2;
+   color: #302833;
+   line-height: 1.7;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+h1, 
+h2, 
+h3 {
+    font-family: "DM Sans", sans-serif;
+}
+
+header {
+    text-align: center;
+    padding: 60px 20px 55px;
+    background: linear-gradient(
+        135deg,
+        #19171d 0%,
+        #302833 55%,
+        #443443 100%
+    );
+    color: #ffffff;
+    border-bottom: 1px solid rgba(181, 170, 181, 0.2);
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+}
+
+header h1 {
+    font-size: 3em;
+    font-weight: 800;
+    letter-spacing: 4px;
+    color: #f4F1F2;
+    text-shadow: 0 4px 20px rgba(255, 255, 255, 0.08);
+    margin-bottom: 15px;
+}
+
+header::before {
+    content: "";
+    position: absolute;
+    width: 280px;
+    height: 280px;
+    background: rgba(181, 170, 181, 0.12);
+    filter: blur(90px);
+    border-radius: 50%;
+    top: -120px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: -1;
+    pointer-events: none;
+    }
+
+header .genre-tags {
+    margin-top: 15px;
+}
+
+header .genre-tags .tag {
+    display: inline-block;
+    background-color: rgba(118, 91, 114, 0.18);
+    border: 1px solid rgba(181, 170, 181, 0.4);
+    color: #e8dfe8;
+    padding: 9px 20px;
+    margin: 5px;
+    border-radius: 8px;
+    font-size: 0.85em;
+    transition: 0.3s ease;
+}
+
+header .genre-tags .tag:hover {
+    background: rgba(118, 91, 114, 0.45);
+    border-color: #b5aab5;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(118, 91, 114, 0.2);
+}
+
+main {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+    flex: 1;
+}
+
+main .profile-card {
+    background: linear-gradient(
+        145deg,
+        #302833,
+        #19171d
+    );
+    padding: 45px;
+    margin: 40px 0;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28), 0 0 18px rgba(181, 170, 181, 0.06);
+    text-align: center;
+    border: 1px solid rgba(181, 170, 181, 0.35);
+}
+
+
+main .profile-card .artist-photo {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    border: 4px solid rgba(181, 170, 181, 0.8);
+    margin-bottom: 25px;
+    object-fit: cover;
+    box-shadow: 0 0 25px rgba(181, 170, 181, 0.03), 0 0 45px rgba(181, 170, 181, 0.12);
+}
+
+main .profile-card .bio {
+    max-width: 650px;
+    margin: 0 auto;
+    color: #e9e3ea;
+    line-height: 1.9;
+}
+
+main .profile-card .bio p {
+    margin-bottom: 18px;
+    font-size: 0.95em;
+    font-weight: 300;
+}
+
+main .profile-card .stats {
+    margin-top: 30px;
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+    gap: 15px;
+    max-width: 100%;
+    overflow-x: auto;
+    padding: 10px 5px 18px;
+}
+
+main .profile-card .stats .stat-item {
+    flex: 0 0 150px;
+    width: 150px;
+    margin: 0;
+    padding: 22px 20px;
+    background: rgba(181, 170, 181, 0.15);
+    border-radius: 14px;
+    border: 1px solid rgba(181, 170, 181, 0.4);
+    transition: 0.3s ease;
+    vertical-align: top;
+}
+
+main .profile-card .stats .stat-item:hover{
+    background: rgba(118, 91, 114, 0.35);
+    transform: translateY(-5px);
+}
+
+main .profile-card .stats .stat-item .stat-value {
+    display: block;
+    font-size: 2em;
+    font-weight: bold;
+    color: #b5aab5;
+    letter-spacing: 1px;
+}
+
+main .profile-card .stats .stat-item .stat-label {
+    font-size: 0.85em;
+    color: #e9e3ea;
+    margin-top: 5px;
+    letter-spacing: 0.5px;
+}
+
+main .discography {
+    margin: 50px 0;
+}
+
+main .discography h2,
+main .social-links h2 {
+    text-align: center;
+    font-size: 2em;
+    font-weight: 800;
+    color: #302833;
+    letter-spacing: 1px;
+    margin-bottom: 30px;
+}
+
+main .social-links h2 {
+    color: #ffffff;
+    font-size: 2em;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+main .discography .album-list {
+    text-align: center;
+    font-size: 0;
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+    gap: 30px;
+    max-width: 100%;
+    overflow-x: auto;
+    padding: 10px 5px 20px;
+}
+
+main .discography .album-list .album-card {
+    flex: 0 0 200px;
+    width: 200px;
+    margin: 0;
+    vertical-align: top;
+    padding: 18px;
+    background: linear-gradient(
+        145deg,
+        #302833,
+        #211d24
+    );
+    color: #e9e3ea;
+    border-radius: 16px;
+    border: 1px solid rgba(181, 170, 181, 0.35);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25),  0 0 15px rgba(181, 170, 181, 0.04);
+    font-size: 1rem;
+    min-height: 380px;
+    position: relative;
+    transition: 0.3s ease;
+}
+
+main .discography .album-list .album-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+    border-color: #765b72
+}
+
+main .discography .album-list .album-card img {
+    width: 150px;
+    height: 150px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    object-fit: cover;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
+}
+
+main .discography .album-list .album-card h3 {
+    font-weight: 800;
+    font-size: 1.05em;
+    color: #ffffff;
+    margin-bottom: 15px;
+    height: 3.3em;
+    line-height: 1.5;
+}
+
+main .discography .album-list .album-card p {
+    font-size: 0.9em;
+    color: #d5cbd5;
+    font-weight: 500;
+    margin-bottom: 15px;
+    vertical-align: top;
+    letter-spacing: 1px;
+}
+
+main .discography .album-list .album-card .btn-listen {
+    display: inline-block;
+    background: linear-gradient(
+        135deg,
+        #b5aab5, 
+        #e9e3ea
+    );
+    color: #19171d;
+    padding: 11px 26px;
+    border-radius: 25px;
+    font-size: 0.85em;
+    text-decoration: none;
+    position: absolute;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    transition: 0.3s ease;
+    white-space: nowrap;
+}
+
+main .discography .album-list .album-card .btn-listen:hover {
+    background: linear-gradient(
+        135deg,
+        #b5aab5,
+        #e9e3ea
+    );
+    transform: translateX(-50%) translateY(-2px);
+    box-shadow: 0 5px 15px rgba(181, 170, 181, 0.25);
+}
+
+main .social-links {
+    text-align: center;
+    padding: 45px 20px;
+    background: linear-gradient(
+        145deg,
+        #302833,
+        #19171d
+    );
+    border: 1px solid rgba(181, 170, 181, 0.35);
+    border-radius: 20px;
+    margin: 40px 0;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    max-width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+main .social-links .social-btn {
+    display: inline-block;
+    background: rgba(181, 170, 181, 0.2);
+    color: #ffffff;
+    padding: 13px 30px;
+    margin: 10px;
+    border: 1px solid rgba(181, 170, 181, 0.65);
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 700;
+    transition: 0.3s ease;
+}
+
+main .social-links .social-btn:hover {
+    background: #765b72;
+    border-color: #b5aab5;
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(181, 171, 181, 0.2);
+}
+
+footer {
+    text-align: center;
+    padding: 35px 20px;
+    background: linear-gradient(
+        135deg,
+        #19171d,
+        #302833
+    );
+    color: #f4f1f2;
+    margin-top: auto;
+    border-top: 1px solid rgba(181, 170, 181, 0.3);
+}
+
+footer p {
+    margin-bottom: 10px;
+    color: #e9e3ea
+}
+
+footer a {
+    color: #d5cbd5;
+    text-decoration: none;
+    font-weight: 700;
+    transition: 0.3s ease;
+}
+
+footer a:hover {
+    text-decoration: underline;
+}
+
+
+
+html,
+body {
+    width: 100%;
+}
+
+header,
+footer {
+    width: 100%;
+    max-width: 100%;
+}
+
+main .social-links h2 {
+    display: block;
+    white-space: normal;
+}
+
+main .social-links .social-btn {
+    white-space: nowrap;
+}
+
+
+@media screen and (max-width: 600px) {
+
+    
+    header {
+        padding: 40px 15px 35px;
+    }
+
+    header h1 {
+        font-size: clamp(1.7rem, 7vw, 2.5rem);
+        letter-spacing: 1px;
+    }
+
+    header .genre-tags .tag {
+        padding: 8px 13px;
+        font-size: 0.78em;
+    }
+
+    
+    main {
+        width: 100%;
+        max-width: 100%;
+        padding: 14px 12px;
+    }
+
+    
+    main .profile-card {
+        padding: 25px 16px;
+        margin: 25px 0;
+    }
+
+    main .profile-card .artist-photo {
+        width: 150px;
+        height: 150px;
+    }
+
+    main .profile-card .bio {
+        font-size: 0.9em;
+    }
+
+    
+    main .profile-card .stats {
+        justify-content: flex-start;
+        overflow-x: auto;
+        scroll-snap-type: x proximity;
+    }
+
+    main .profile-card .stats .stat-item {
+        flex: 0 0 145px;
+        width: 145px;
+        padding: 18px 12px;
+        scroll-snap-align: start;
+    }
+
+    main .profile-card .stats .stat-item .stat-value {
+        font-size: 1.7em;
+    }
+
+    
+    main .discography {
+        margin: 35px 0;
+    }
+
+    main .discography h2 {
+        font-size: 1.7em;
+    }
+
+    main .discography .album-list {
+        justify-content: flex-start;
+        overflow-x: auto;
+        scroll-snap-type: x proximity;
+        gap: 15px;
+    }
+
+    main .discography .album-list .album-card {
+        flex: 0 0 190px;
+        width: 190px;
+        min-height: 360px;
+        padding: 15px;
+        scroll-snap-align: start;
+    }
+
+    main .discography .album-list .album-card img {
+        width: 100%;
+        height: 150px;
+    }
+
+    main .discography .album-list .album-card h3 {
+        font-size: 0.95em;
+    }
+
+    
+    main .social-links {
+        padding: 30px 15px;
+        margin: 25px 0;
+        text-align: left;
+    }
+
+    main .social-links h2 {
+        font-size: 1.7em;
+        text-align: center;
+    }
+
+    main .social-links .social-btn {
+        padding: 11px 20px;
+        margin: 8px 5px;
+        font-size: 0.85em;
+    }
+
+    footer {
+        padding: 30px 15px;
+        font-size: 0.85em;
+        overflow-wrap: anywhere;
+    }
+}
+main {
+    box-sizing: border-box;
+}
