@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450">
+  <defs>
+    <linearGradient id="night" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#171a3a"/>
+      <stop offset=".55" stop-color="#303b78"/>
+      <stop offset="1" stop-color="#75519a"/>
+    </linearGradient>
+    <linearGradient id="neon" x1="0" y1="1" x2="1" y2="0">
+      <stop stop-color="#55e2c2"/>
+      <stop offset=".5" stop-color="#54c8ed"/>
+      <stop offset="1" stop-color="#d478d1"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" rx="48" fill="url(#night)"/>
+  <g opacity=".24" fill="#fff">
+    <circle cx="74" cy="88" r="5"/><circle cx="710" cy="74" r="7"/>
+    <circle cx="736" cy="184" r="4"/><circle cx="122" cy="172" r="4"/>
+    <circle cx="670" cy="390" r="5"/><circle cx="96" cy="340" r="6"/>
+  </g>
+  <path d="M0 450V300l92-92 82 82 105-105 112 112 137-137 272 200v90z" fill="#14172f"/>
+  <path d="M0 300l92-92 82 82 105-105 112 112 137-137 272 200" fill="none" stroke="url(#neon)" stroke-width="14" stroke-linejoin="round"/>
+  <rect x="302" y="82" width="196" height="196" rx="52" fill="#22284e" stroke="#77d7d6" stroke-width="10"/>
+  <path d="M338 142l62-58 62 58v82l-62 55-62-55z" fill="#f8c568"/>
+  <path d="M350 156l50-35 50 35-50 27z" fill="#fff1ad"/>
+  <circle cx="372" cy="204" r="16" fill="#2d3158"/>
+  <circle cx="428" cy="204" r="16" fill="#2d3158"/>
+  <path d="M374 245c18 14 34 14 52 0" fill="none" stroke="#2d3158" stroke-width="10" stroke-linecap="round"/>
+  <rect x="212" y="322" width="376" height="94" rx="47" fill="#101326" opacity=".94"/>
+  <circle cx="264" cy="369" r="26" fill="#f06f80"/>
+  <circle cx="264" cy="369" r="10" fill="#fff"/>
+  <text x="442" y="382" text-anchor="middle" fill="#ffffff" font-family="Arial, sans-serif" font-size="42" font-weight="900" letter-spacing="4">LIVE NOW</text>
+</svg>

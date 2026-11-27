@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Z-Gamer | FPS Streamer</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "plus jakarta sans", arial, sans-serif;
+      background: linear-gradient(135deg, #eaf0fc 0%, #dce5f8 55%, #f0eafa 100%);
+      color: #303b53;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .top-banner {
+      background: linear-gradient(to right, #dce5f8, #e9e3f5);
+      color: #394866;
+      text-align: center;
+      padding: 12px;
+      font-weight: bold;
+      box-shadow: 0 4px 6px rgb(80 100 140 / 0.12);
+      text-shadow: none
+    }
+
+    .navbar {
+      background-color: #f8faff;
+      padding: 15px 50px;
+      border-bottom: 2px solid #dce5f8;
+      overflow: auto;
+      position: sticky;
+      top: 0;
+      z-index: 9999;
+    }
+
+    .navbar .nav-logo {
+      float: left;
+      color: #718bbd;
+      font-size: 24px;
+      text-decoration: none;
+      letter-spacing: 1px;
+      font-weight: bold;
+    }
+
+    .navbar .nav-menu {
+      float: right;
+      list-style: none;
+      margin-top: 5px;
+    }
+
+    .navbar .nav-menu li {
+      display: inline-block;
+      margin-left: 25px;
+    }
+
+    .navbar .nav-menu li a {
+      color: #394866;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: bold;
+      text-transform: uppercase;
+      position: relative;
+    }
+
+    .navbar .nav-menu li a::after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 2px;
+      left: 0;
+      bottom: -4px;
+      background-color: #8198c5;
+      transition: width 0.3s;
+    }
+
+    .navbar .nav-menu li a:hover::after {
+      width: 100%;
+    }
+
+    main {
+      width: 90%;
+      max-width: 1000px;
+      margin: 40px auto;
+    }
+
+    main .bio {
+      background-color: #ffffff;
+      padding: 35px;
+      border-radius: 16px;
+      margin-bottom: 50px;
+      border: 1px solid #dce5f8;
+      box-shadow: 0 10px 30px rgb(100 120 160 / 0.12);
+    }
+
+    main .bio img {
+      float: left;
+      width: 160px;
+      height: 160px;
+      border-radius: 12px;
+      margin-right: 20px;
+      margin-bottom: 5px;
+    }
+
+    main .bio h2 {
+      margin-bottom: 15px;
+      font-size: 32px;
+      background: linear-gradient(to right, #718bbd, #a18bbd);
+      background-clip: text;
+      color: transparent;
+    }
+
+    main .bio p {
+      margin-bottom: 15px;
+    }
+
+    main .card-container {
+      margin-bottom: 60px;
+      text-align: center;
+    }
+
+    main .card-container .profile-wrapper {
+      display: inline-block;
+      border: 6px solid white;
+      border-radius: 24px;
+      box-shadow: 0 25px 50px rgb(100 120 160 / 0.18);
+      overflow: hidden;
+      position: relative;
+    }
+
+    main .card-container .profile-wrapper img {
+      width: 100%;
+      display: block;
+      max-width: 600px;
+    }
+
+    main .card-container .profile-wrapper .badge {
+      background-color: #d98283;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-weight: bold;
+      font-size: 14px;
+      position: absolute;
+      top: 25px;
+      right: 25px;
+      letter-spacing: 1px;
+      box-shadow: 0 4px 10px rgb(100 70 90 / 0.15);
+    }
+
+    main .schedule {
+      background-color: #f8faff;
+      padding: 30px;
+      border: 1px dashed #9aadd2;
+      margin-bottom: 60px;
+      border-radius: 12px;
+    }
+
+    :is(.schedule, .gallery) h3 {
+      margin-bottom: 20px;
+      text-align: center;
+      font-size: 24px;
+    }
+
+    main .schedule ul {
+      list-style: none;
+      text-align: center;
+    }
+
+    main .schedule ul li {
+      margin-bottom: 10px;
+      padding: 10px;
+      transition: 0.3s;
+    }
+
+    main .schedule ul li:nth-child(even) {
+      background-color: #eaf0fc;
+      border-radius: 6px;
+    }
+
+    main .schedule ul li:hover {
+      transform: scale(1.02);
+      color: #718bbd;
+    }
+
+    main .schedule ul li b {
+      color: #718bbd;
+    }
+
+    main .gallery {
+      text-align: center;
+    }
+
+    main .gallery h3 {
+      text-align: left;
+      margin-bottom: 30px;
+      border-left: 6px solid #8198c5;
+      padding-left: 15px;
+    }
+
+    main .gallery .video-item {
+      display: inline-block;
+      width: 23%;
+      margin: 1%;
+      background-color: #ffffff;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #dce5f8;
+      text-align: left;
+      transition: 0.3s;
+    }
+
+    main .gallery .video-item:hover {
+      box-shadow: 0 10px 20px rgb(129 152 197 / 0.25);
+      transform: translateY(-5px);
+      cursor: pointer;
+    }
+
+    main .gallery:has(.video-item:hover) .video-item:not(:hover) {
+      opacity: 0.5;
+      filter: grayscale(80%);
+    }
+
+    main .gallery .video-item img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+    }
+
+    main .gallery .video-item .video-info {
+      padding: 15px;
+    }
+
+    main .gallery .video-item .video-info h4 {
+      font-size: 13px;
+      margin-bottom: 8px;
+      color: #394866
+    }
+
+    main .gallery .video-item .video-info p {
+      font-size: 11px;
+      color: #8996ad;
+    }
+
+    .chat-btn {
+      position: fixed;
+      bottom: 35px;
+      right: 35px;
+      width: 70px;
+      height: 70px;
+      background-color: #8198c5;
+      color: white;
+      border-radius: 50%;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 32px;
+      text-align: center;
+      line-height: 70px;
+      box-shadow: 0 15px 30px rgb(100 120 160 / 0.2);
+      transition: 0.3s;
+    }
+
+    .chat-btn:hover {
+      background-color: #718bbd;
+      transform: scale(1.1);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Promo Banner -->
+  <div class="top-banner">
+    🚀 EXPLORE MIAWAUG'S OFFICIAL MERCH!
+  </div>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <a href="#" class="nav-logo">MiawAug</a>
+    <ul class="nav-menu">
+      <li><a href="#">Home</a></li>
+      <li><a href="#">Videos</a></li>
+      <li><a href="#">About</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <!-- About Section -->
+    <section class="bio">
+      <img src="miawaug-profile-fanart.svg" alt="Fanart MiawAug untuk profil" class="bio-img">
+      <h2>The World of MiawAug</h2>
+      <p>MiawAug merupakan salah satu kreator konten gaming asal Indonesia yang dikenal dengan kepribadiannya yang menghibur, reaksi lucu, dan kecintaannya terhadap dunia permainan. Melalui kanal YouTube-nya, MiawAug menghadirkan berbagai pengalaman bermain game yang seru, mulai dari petualangan menegangkan hingga permainan horor yang penuh kejutan. Dengan gaya khasnya, ia berhasil menciptakan hiburan yang selalu dinantikan oleh para Milovers.</p>
+      <p>Halo, Milovers! Siap menjelajahi berbagai keseruan dunia gaming MiawAug? Temukan momen-momen lucu, tantangan seru, dan pengalaman bermain game yang pastinya sayang untuk dilewatkan!</p>
+    </section>
+
+    <!-- Profile Status -->
+    <section class="card-container">
+      <figure class="profile-wrapper">
+        <span class="badge">● LIVE NOW</span>
+        <img src="miawaug-live-cover-fanart.svg" alt="Cover live fanart MiawAug">
+      </figure>
+    </section>
+
+    <!-- Weekly Schedule -->
+    <section class="schedule">
+      <h3>🎮 Current Streaming Schedule</h3>
+      <ul>
+        <li>Senin: <b>19.00 - 21.00</b> (Horror Game Night)</li>
+        <li>Rabu: <b>19.00 - 21.00</b> (Adventure & Story Games)</li>
+        <li>Jumat: <b>20.00 - 22.00</b> (Random Games & Challenges)</li>
+        <li>Sabtu: <b>15.00 - 18.00</b> (Gaming With Subscribers)</li>
+      </ul>
+    </section>
+
+    <!-- Highlights Gallery -->
+    <section class="gallery">
+      <h3>Latest Highlights</h3>
+
+      <figure class="video-item">
+        <img src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/687050/ss_32a7f8bd10a3088b6f5a4fb77aeccf4d2f602a2e.1920x1080.jpg?t=1644404009&utm_source=chatgpt.com" alt="Clip 1">
+        <figcaption class="video-info">
+          <h4>White Day</h4>
+          <p>5,8 M Views • 12 hours ago</p>
+        </figcaption>
+      </figure>
+
+      <figure class="video-item">
+        <img src="https://cdn.akamai.steamstatic.com/steam/apps/859570/ss_52c1c12843cea33b046c7dc3424573a23ec00250.1920x1080.jpg?t=1671127531&utm_source=chatgpt.com" alt="Clip 2">
+        <figcaption class="video-info">
+          <h4> Secret Neighbor <h4>
+          <p>2,4 M Views • 1 day ago</p>
+        </figcaption>
+      </figure>
+
+      <figure class="video-item">
+        <img src="https://www.gamepressure.com/little-nightmares/gfx/word/28582578.jpg?utm_source=chatgpt.com" alt="Clip 3">
+        <figcaption class="video-info">
+          <h4>Little Nightmares</h4>
+          <p>5,3 M Views • 3 days ago</p>
+        </figcaption>
+      </figure>
+
+      <figure class="video-item">
+        <img src="https://images.steamusercontent.com/ugc/17880581642634074844/CE92F95C3D6F9F2CE79FF8AADFF7E098FFC8F7A5/?ima=fit&imcolor=%23000000&impolicy=Letterbox&imw=1024&letterbox=false&utm_source=chatgpt.com" alt="Clip 4">
+        <figcaption class="video-info">
+          <h4>Pacify</h4>
+          <p>3,9 M Views • 1 week ago</p>
+        </figcaption>
+      </figure>
+    </section>
+  </main>
+
+  <!-- Chat Button -->
+  <a href="#" class="chat-btn" title="Join The Community">💬</a>
+
+</body>
+
+</html>
